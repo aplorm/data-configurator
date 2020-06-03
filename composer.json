@@ -1,10 +1,12 @@
 {
-    "name": "aplorm/lexer",
-    "description": "Lexer for aplorm",
+    "name": "aplorm/data-configurator",
+    "description": "data configurator for aplorm",
     "type": "library",
     "require": {
         "php": "7.4.3",
-        "aplorm/common": "dev-master"
+        "aplorm/common": "dev-master",
+        "aplorm/interpreter": "dev-master",
+        "aplorm/lexer": "dev-master"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^2.16",
@@ -20,18 +22,26 @@
     ],
     "autoload": {
         "psr-4": {
-            "Aplorm\\Lexer\\": "src/"
+            "Aplorm\\DataConfigurator\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Aplorm\\Lexer\\Tests\\": "Tests/"
+            "Aplorm\\DataConfigurator\\Tests\\": "Tests/"
         }
     },
     "repositories": [
         {
             "type": "vcs",
             "url": "https://github.com/aplorm/common"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/aplorm/lexer"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/aplorm/interpreter"
         }
     ]
 }
