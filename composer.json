@@ -6,7 +6,8 @@
         "php": "7.4.3",
         "aplorm/common": "dev-master",
         "aplorm/interpreter": "dev-master",
-        "aplorm/lexer": "dev-master"
+        "aplorm/lexer": "dev-master",
+        "aplorm/collection": "dev-master"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^2.16",
@@ -42,6 +43,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/aplorm/interpreter"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/aplorm/collection"
         }
     ]
 }

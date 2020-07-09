@@ -12,13 +12,14 @@ declare(strict_types=1);
 
 namespace Aplorm\DataConfigurator\Tests\DataConfiguration;
 
-use Aplorm\Common\Lexer\LexedPartInterface;
+use Aplorm\Common\Memory\ObjectJar;
 use Aplorm\Common\Test\AbstractTest;
 use Aplorm\DataConfigurator\DataConfiguration;
+use Aplorm\DataConfigurator\Exceptions\AnnotationNotFoundException;
+use Aplorm\DataConfigurator\Exceptions\AttributeNotFoundException;
+use Aplorm\DataConfigurator\Tests\Sample\InterpreterClassTest;
+use Aplorm\DataConfigurator\Tests\Sample\TestAnnotations\Annotation7;
 use Aplorm\Interpreter\Interpreter;
-use Aplorm\Interpreter\Tests\Sample\SampleClass;
-use Aplorm\Interpreter\Tests\Sample\TestAnnotations\Annotation7;
-use Aplorm\Interpreter\Tests\Sample\TestAnnotations\Annotation;
 use Aplorm\Lexer\Lexer\Lexer;
 
 class SuccessTest extends AbstractTest
@@ -35,6 +36,7 @@ class SuccessTest extends AbstractTest
      */
     protected function doTearDown(): void
     {
+        ObjectJar::clean();
     }
 
     public static function setupBeforeClass(): void
@@ -48,15 +50,49 @@ class SuccessTest extends AbstractTest
     /**
      * @dataProvider classFileProvider
      *
-     * @param string $fileName
+     * @param string  $fileName
+     * @param int[]   $multipleAnnotations
+     * @param mixed[] $attributesValue
+     * @param mixed[] $functionValue
+     *
+     * @throws AnnotationNotFoundException
+     * @throws AttributeNotFoundException
      */
-    public function testDataConfiguration($fileName): void
-    {
+    public function testDataConfiguration(
+        $fileName,
+        int $classAnnotationsNumber,
+        array $multipleAnnotations,
+        array $attributesValue,
+        array $functionValue
+    ): void {
+        $time = microtime(true);
+        $mem = memory_get_usage();
         $parts = Lexer::analyse($fileName);
         Interpreter::interprete($parts);
         $dc = new DataConfiguration($parts);
-        var_dump($dc);
-        self::assertTrue(true);
+        var_dump(microtime(true) - $time, (memory_get_usage() - $mem) / 1024);
+        self::assertCount($classAnnotationsNumber, $dc->getClassAnnotations());
+        foreach ($multipleAnnotations as $annotation => $size) {
+            self::assertCount($size, $dc->getClassAnnotation($annotation));
+        }
+
+        foreach ($attributesValue as $attribute => $value) {
+            self::assertNotNull($dc->getAttribute($attribute));
+            self::assertEquals($value, $dc->getAttribute($attribute)->getDefaultValue());
+        }
+        foreach ($functionValue as $name => $configuration) {
+            self::assertNotNull($dc->getMethod($name));
+            $functionConfiguration = $dc->getMethod($name);
+            self::assertCount($configuration['annotations'], $functionConfiguration->getAnnotations());
+            self::assertEquals($configuration['returnType'], $functionConfiguration->getReturnType());
+            self::assertEquals($configuration['isNullable'], $functionConfiguration->isReturnNullable());
+            foreach ($configuration['parameter'] as $paramName => $paramValue) {
+                self::assertNotNull($functionConfiguration->getParameter($paramName));
+                $paramConfiguration = $functionConfiguration->getParameter($paramName);
+                self::assertEquals($paramValue['type'], $paramConfiguration->getType());
+                self::assertEquals($paramValue['value'], $paramConfiguration->getDefaultValue());
+            }
+        }
     }
 
     /**
@@ -72,6 +108,30 @@ class SuccessTest extends AbstractTest
 
         yield [
             $dir.'/InterpreterClassTest.php',
+            8,
+            [
+                Annotation7::class => 2,
+            ],
+            [
+                'string' => 'une string avec des espaces',
+            ],
+            [
+                'mafunction' => [
+                    'annotations' => 1,
+                    'returnType' => 'bool',
+                    'isNullable' => false,
+                    'parameter' => [
+                        'param1' => [
+                            'type' => 'string',
+                            'value' => InterpreterClassTest::A_CONSTANT,
+                        ],
+                        'param2' => [
+                            'type' => 'bool',
+                            'value' => true,
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 }

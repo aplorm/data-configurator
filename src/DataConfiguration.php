@@ -17,6 +17,7 @@ use Aplorm\Common\DataConfigurator\AttributeConfigurationInterface;
 use Aplorm\Common\DataConfigurator\DataConfigurationInterface;
 use Aplorm\Common\DataConfigurator\MethodConfigurationInterface;
 use Aplorm\Common\Lexer\LexedPartInterface;
+use Aplorm\Common\Memory\ObjectJar;
 use Aplorm\DataConfigurator\Exceptions\AnnotationNotFoundException;
 use Aplorm\DataConfigurator\Exceptions\AttributeNotFoundException;
 use Aplorm\DataConfigurator\Exceptions\MethodNotFoundException;
@@ -54,19 +55,35 @@ class DataConfiguration implements DataConfigurationInterface
      */
     public function getClassAnnotations(): iterable
     {
-        return $this->classData['annotations'] ?? [];
+        return array_map(function($reference) {
+            if (is_array($reference)) {
+                return array_map(function(\WeakReference $ref) {
+                    return $ref->get();
+                }, $reference);
+            }
+
+            return $reference->get();
+        }, $this->classData['annotations'] ?? []);
     }
 
     /**
      * @throws AnnotationNotFoundException
+     *
+     * @return AnnotationInterface|AnnotationInterface[]
      */
-    public function getClassAnnotation(string $annotation): AnnotationInterface
+    public function getClassAnnotation(string $annotation)
     {
         if (!isset($this->classData['annotations'][$annotation])) {
             throw new AnnotationNotFoundException($annotation);
         }
 
-        return $this->classData['annotations'][$annotation];
+        if (is_array($this->classData['annotations'][$annotation])) {
+            return array_map(function(\WeakReference $reference) {
+                return $reference->get();
+            }, $this->classData['annotations'][$annotation]);
+        }
+
+        return $this->classData['annotations'][$annotation]->get();
     }
 
     /**
@@ -74,7 +91,9 @@ class DataConfiguration implements DataConfigurationInterface
      */
     public function getAttributes(): iterable
     {
-        return $this->attributesData;
+        return array_map(function(\WeakReference $reference) {
+            return $reference->get();
+        }, $this->attributesData);
     }
 
     /**
@@ -86,7 +105,7 @@ class DataConfiguration implements DataConfigurationInterface
             throw new AttributeNotFoundException($attribute);
         }
 
-        return $this->attributesData[$attribute];
+        return $this->attributesData[$attribute]->get();
     }
 
     /**
@@ -109,7 +128,9 @@ class DataConfiguration implements DataConfigurationInterface
      */
     public function getMethods(): iterable
     {
-        return $this->methodData;
+        return array_map(function(\WeakReference $reference) {
+            return $reference->get();
+        }, $this->methodData);
     }
 
     /**
@@ -121,7 +142,7 @@ class DataConfiguration implements DataConfigurationInterface
             throw new MethodNotFoundException($method);
         }
 
-        return $this->methodData[$method];
+        return $this->methodData[$method]->get();
     }
 
     /**
@@ -156,7 +177,7 @@ class DataConfiguration implements DataConfigurationInterface
     protected function initAttribute(array &$data): void
     {
         foreach ($data as $key => &$value) {
-            $this->attributesData[$key] = new AttributeConfiguration($value);
+            $this->attributesData[$key] = ObjectJar::add('data-configuration', new AttributeConfiguration($value));
         }
 
         unset($data);
@@ -168,7 +189,7 @@ class DataConfiguration implements DataConfigurationInterface
     protected function initMethod(array &$data): void
     {
         foreach ($data as $key => &$value) {
-            $this->methodData[$key] = new MethodConfiguration($value);
+            $this->methodData[$key] = ObjectJar::add('data-configuration', new MethodConfiguration($value));
         }
 
         unset($data);

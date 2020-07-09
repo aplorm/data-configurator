@@ -4,6 +4,9 @@ namespace Aplorm\DataConfigurator\Tests\Sample\TestAnnotations;
 
 use Aplorm\Common\DataConfigurator\AnnotationInterface;
 
+/**
+ * @Annotation
+ */
 class Annotation8 implements AnnotationInterface
 {
     public $a;
@@ -11,12 +14,12 @@ class Annotation8 implements AnnotationInterface
     public $c;
     public $d;
 
-    public function __construct(int $a, int $b, int $c, int $d)
+    public function __construct($args)
     {
-        $this->a = $a;
-        $this->b = $b;
-        $this->c = $c;
-        $this->d = $d;
+        $this->a = 1;
+        $this->b = 2;
+        $this->c = 2;
+        $this->d = 2;
     }
 }
 

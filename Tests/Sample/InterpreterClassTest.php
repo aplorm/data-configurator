@@ -16,6 +16,7 @@ use Aplorm\DataConfigurator\Exception\ClassNotFoundException;
 use Aplorm\DataConfigurator\Tests\Sample\SampleClass;
 use Aplorm\DataConfigurator\Tests\Sample\TestAnnotations\Annotation11;
 use Aplorm\DataConfigurator\Tests\Sample\TestAnnotations\Annotation3;
+use Aplorm\DataConfigurator\Tests\Sample\TestAnnotations\Annotation2;
 use Aplorm\DataConfigurator\Tests\Sample\TestAnnotations\Annotation5;
 use Aplorm\DataConfigurator\Tests\Sample\TestAnnotations\Annotation6;
 use Aplorm\DataConfigurator\Tests\Sample\TestAnnotations\Annotation7;
@@ -27,19 +28,19 @@ use Aplorm\DataConfigurator\Tests\Sample\TestAnnotations\Annotation;
  * class comment.
  *
  * @Annotation
- * @Aplorm\DataConfigurator\Tests\Sample\TestAnnotations\Annotation2({
+ * @Annotation2({
  *     "key.1": 1,
  *     "key.2": "string",
- *     "key.3": SampleClass::A_CONSTANT,
+ *     "key.3": "SampleClass::A_CONSTANT",
  *     "key.4": @Annotation3(@Annotation11({1, 2, 3, 4})),
  *     "key.5": true
  * })
  * @TestAnnotations\Annotation4("param")
  * @Annotation5(1)
  * @Annotation6(true)
- * @Annotation7(self::A_CONSTANT)
- * @Annotation7(SampleClass::A_CONSTANT)
- * @Annotation8(1, 2, 3, 4)
+ * @Annotation7("self::A_CONSTANT")
+ * @Annotation7("SampleClass::A_CONSTANT")
+ * @Annotation8("1, 2, 3, 4")
  * @Annotation9(name="bla")
  */
 class InterpreterClassTest
@@ -49,7 +50,7 @@ class InterpreterClassTest
     public static $astatic = 1;
 
     /**
-     * @Annotation6
+     * @Annotation6(true)
      */
     private float $float = 1.5;
     private int $int = 1;
@@ -95,13 +96,6 @@ FOOBAR;
     ];
 
     /**
-     * [mafunction description].
-     *
-     * @param string $param1 [description]
-     * @param array  $param2 [description]
-     *
-     * @return int|string
-     *
      * @Annotation9(name="bla")
      */
     public function mafunction(string $param1 = self::A_CONSTANT, bool $param2 = true): bool

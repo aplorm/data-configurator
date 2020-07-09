@@ -18,10 +18,8 @@ use Aplorm\DataConfigurator\Exceptions\AnnotationNotFoundException;
 
 class AttributeConfiguration implements AttributeConfigurationInterface
 {
-    /**
-     * @var AnnotationInterface[]
-     */
-    private array $annotations = [];
+    use AnnotedDataInterfaceTrait;
+
     private ?string $type = null;
     private ?string $visibility = null;
     private bool $nullable = true;
@@ -36,35 +34,15 @@ class AttributeConfiguration implements AttributeConfigurationInterface
      */
     public function __construct(array &$data)
     {
-        var_dump($data);
         $this->annotations = &$data['annotations'];
         $this->type = &$data['type'];
         $this->visibility = &$data['visibility'];
         $this->value = &$data['value'];
-        $this->nullable = &$data['nullable'] ?? true;
+        $this->nullable = $data['nullable'] ?? true;
 
         unset($data);
     }
 
-    /**
-     * @return AnnotationInterface[]
-     */
-    public function getAnnotations(): array
-    {
-        return $this->annotations;
-    }
-
-    /**
-     * @throws AnnotationNotFoundException
-     */
-    public function getAnnotation(string $annotation): AnnotationInterface
-    {
-        if (!isset($this->annotations[$annotation])) {
-            throw new AnnotationNotFoundException($annotation);
-        }
-
-        return $this->annotations[$annotation];
-    }
 
     /**
      * @return string|null the type defined with php7.4 syntax

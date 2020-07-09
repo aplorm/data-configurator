@@ -15,15 +15,13 @@ namespace Aplorm\DataConfigurator;
 use Aplorm\Common\DataConfigurator\AnnotationInterface;
 use Aplorm\Common\DataConfigurator\MethodConfigurationInterface;
 use Aplorm\Common\DataConfigurator\ParameterConfigurationInterface;
+use Aplorm\Common\Memory\ObjectJar;
 use Aplorm\DataConfigurator\Exceptions\AnnotationNotFoundException;
 use Aplorm\DataConfigurator\Exceptions\ParameterNotFoundException;
 
 class MethodConfiguration implements MethodConfigurationInterface
 {
-    /**
-     * @var AnnotationInterface[]
-     */
-    private array $annotations = [];
+    use AnnotedDataInterfaceTrait;
 
     /**
      * @var ParameterConfigurationInterface[];
@@ -56,26 +54,6 @@ class MethodConfiguration implements MethodConfigurationInterface
         unset($data);
     }
 
-    /**
-     * @return AnnotationInterface[]
-     */
-    public function getAnnotations(): array
-    {
-        return $this->annotations;
-    }
-
-    /**
-     * @throws AnnotationNotFoundException
-     */
-    public function getAnnotation(string $annotation): AnnotationInterface
-    {
-        if (!isset($this->annotations[$annotation])) {
-            throw new AnnotationNotFoundException($annotation);
-        }
-
-        return $this->annotations[$annotation];
-    }
-
     public function getReturnType(): ?string
     {
         return $this->return['type'] ?? null;
@@ -91,7 +69,9 @@ class MethodConfiguration implements MethodConfigurationInterface
      */
     public function getParameters(): array
     {
-        return $this->parameters;
+        return array_map(function(\WeakReference $reference) {
+            return $reference->get();
+        }, $this->parameters);
     }
 
     /**
@@ -103,7 +83,7 @@ class MethodConfiguration implements MethodConfigurationInterface
             throw new ParameterNotFoundException($parameter);
         }
 
-        return $this->parameters[$parameter];
+        return $this->parameters[$parameter]->get();
     }
 
     /**
@@ -135,7 +115,7 @@ class MethodConfiguration implements MethodConfigurationInterface
     protected function initParameters(array &$data): void
     {
         foreach ($data as $key => $parameter) {
-            $this->parameters[$key] = new ParameterConfiguration($data);
+            $this->parameters[$key] = ObjectJar::add('data-configuration', new ParameterConfiguration($parameter));
         }
 
         unset($data);

@@ -12,15 +12,7 @@ declare(strict_types=1);
 
 namespace Aplorm\DataConfigurator\Tests\DataConfiguration;
 
-use Aplorm\Common\Lexer\LexedPartInterface;
 use Aplorm\Common\Test\AbstractTest;
-use Aplorm\Interpreter\Exception\ClassNotFoundException;
-use Aplorm\Interpreter\Exception\ClassPartNotFoundException;
-use Aplorm\Interpreter\Exception\ConstantNotFoundException;
-use Aplorm\Interpreter\Exception\InvalidAnnotationConfigurationException;
-use Aplorm\Interpreter\Exception\WrongAnnotationTypeException;
-use Aplorm\Interpreter\Interpreter;
-use Aplorm\Lexer\Lexer\Lexer;
 
 class FailTest extends AbstractTest
 {
